@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Data.SqlClient;
 
+using Microsoft.Extensions.Logging;
+
 using Polly;
 using Polly.Retry;
 
@@ -10,31 +12,37 @@ namespace ConAppPollyRetryDeadlock
 	{
 		private const int SqlDeadlockError = 1205;
 
-		private static readonly RetryPolicy DeadlockPolicy =
+		private static ILogger _logger = new LoggerFactory().CreateLogger(nameof(RetryHelper));
+
+		public static void Configure(ILogger logger)
+		{
+			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
+		}
+
+		private static RetryPolicy BuildPolicy() =>
 			Policy
 				.Handle<SqlException>(ex => ex.Number == SqlDeadlockError)
 				.WaitAndRetry(
 					retryCount: 3,
 					sleepDurationProvider: attempt =>
-						TimeSpan.FromMilliseconds(200 * Math.Pow(2, attempt)), // 400ms, 800ms, 1600ms
+						TimeSpan.FromMilliseconds(200 * Math.Pow(2, attempt)),
 					onRetry: (exception, delay, attempt, context) =>
 					{
 						var name = context.ContainsKey("name") ? context["name"] : "?";
-						Console.ForegroundColor = ConsoleColor.Yellow;
-						Console.WriteLine(
-							$"  [{name}] DEADLOCK — tentative {attempt}, retry dans {delay.TotalMilliseconds}ms");
-						Console.ResetColor();
+						_logger.LogWarning(
+							"[{Name}] DEADLOCK — tentative {Attempt}, retry dans {DelayMs}ms",
+							name, attempt, delay.TotalMilliseconds);
 					});
 
 		public static void ExecuteWithRetry(string operationName, Action operation)
 		{
 			var context = new Context { ["name"] = operationName };
 
-			Console.WriteLine($"  [{operationName}] Démarrage...");
+			_logger.LogInformation("[{OperationName}] Démarrage...", operationName);
 
-			DeadlockPolicy.Execute(ctx => operation(), context);
+			BuildPolicy().Execute(ctx => operation(), context);
 
-			Console.WriteLine($"  [{operationName}] Succès.");
+			_logger.LogInformation("[{OperationName}] Succès.", operationName);
 		}
 	}
 }
