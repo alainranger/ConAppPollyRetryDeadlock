@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/docker/">
+    <File Path="docker/docker-compose.yml" />
+  </Folder>
+  <Folder Name="/net2/">
+    <Project Path="src/net2/ConAppPollyRetryDeadlock/ConAppPollyRetryDeadlock.csproj" Id="f8fa3cc7-5c3f-4e0f-9384-d855f3361def" />
+  </Folder>
+  <Folder Name="/net481/">
+    <Project Path="src/net481/ConAppPollyRetryDeadlock/ConAppPollyRetryDeadlock.csproj" Id="75f675e8-a003-4611-9973-ffe296d3fdb9" />
+  </Folder>
+  <Folder Name="/shared/">
+    <Project Path="src/shared/ConAppPollyRetryDeadlock.Shared/ConAppPollyRetryDeadlock.Shared.csproj" Id="9d5af7b1-3f3b-4a21-83a6-6a870813d5d2" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+  </Folder>
+</Solution>
