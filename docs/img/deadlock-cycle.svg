@@ -1,0 +1,64 @@
+<svg width="620" height="420" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Arial, sans-serif">
+  <defs>
+    <marker id="ah-g" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#a6e3a1"/>
+    </marker>
+    <marker id="ah-r" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#f38ba8"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="620" height="420" fill="#1e1e2e" rx="12"/>
+
+  <!-- Title -->
+  <text x="310" y="34" text-anchor="middle" fill="#cdd6f4" font-size="15" font-weight="bold">Cycle d'attente — Deadlock SQL Server</text>
+
+  <!-- TABLE Comptes (top center) -->
+  <rect x="210" y="58" width="200" height="58" rx="8" fill="#181825" stroke="#89b4fa" stroke-width="2"/>
+  <text x="310" y="82" text-anchor="middle" fill="#89b4fa" font-size="13" font-weight="bold">TABLE Comptes</text>
+  <text x="310" y="102" text-anchor="middle" fill="#585b70" font-size="11">Id=1 · Solde = 1 000,00 €</text>
+
+  <!-- TABLE Commandes (bottom center) -->
+  <rect x="210" y="304" width="200" height="58" rx="8" fill="#181825" stroke="#89b4fa" stroke-width="2"/>
+  <text x="310" y="328" text-anchor="middle" fill="#89b4fa" font-size="13" font-weight="bold">TABLE Commandes</text>
+  <text x="310" y="348" text-anchor="middle" fill="#585b70" font-size="11">Id=1 · Montant = 250,00 €</text>
+
+  <!-- Thread A (left) -->
+  <rect x="22" y="172" width="162" height="62" rx="8" fill="#181825" stroke="#a6e3a1" stroke-width="2.5"/>
+  <text x="103" y="198" text-anchor="middle" fill="#a6e3a1" font-size="14" font-weight="bold">Thread A</text>
+  <text x="103" y="218" text-anchor="middle" fill="#585b70" font-size="10">Comptes ➜ Commandes</text>
+
+  <!-- Thread B (right) -->
+  <rect x="436" y="172" width="162" height="62" rx="8" fill="#181825" stroke="#f38ba8" stroke-width="2.5"/>
+  <text x="517" y="198" text-anchor="middle" fill="#f38ba8" font-size="14" font-weight="bold">Thread B</text>
+  <text x="517" y="218" text-anchor="middle" fill="#585b70" font-size="10">Commandes ➜ Comptes</text>
+
+  <!-- Arrow 1: A HOLDS Comptes (green solid) -->
+  <line x1="184" y1="185" x2="217" y2="114" stroke="#a6e3a1" stroke-width="2.5" marker-end="url(#ah-g)"/>
+  <text x="176" y="144" text-anchor="end" fill="#a6e3a1" font-size="11" font-weight="bold">🔒 HOLDS</text>
+
+  <!-- Arrow 3: A WANTS Commandes (red dashed) -->
+  <line x1="184" y1="221" x2="217" y2="306" stroke="#f38ba8" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#ah-r)"/>
+  <text x="176" y="272" text-anchor="end" fill="#f38ba8" font-size="11" font-weight="bold">⏳ WANTS</text>
+
+  <!-- Arrow 2: B HOLDS Commandes (green solid) -->
+  <line x1="436" y1="221" x2="403" y2="306" stroke="#a6e3a1" stroke-width="2.5" marker-end="url(#ah-g)"/>
+  <text x="444" y="272" text-anchor="start" fill="#a6e3a1" font-size="11" font-weight="bold">🔒 HOLDS</text>
+
+  <!-- Arrow 4: B WANTS Comptes (red dashed) -->
+  <line x1="436" y1="185" x2="403" y2="114" stroke="#f38ba8" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#ah-r)"/>
+  <text x="444" y="144" text-anchor="start" fill="#f38ba8" font-size="11" font-weight="bold">⏳ WANTS</text>
+
+  <!-- Center: deadlock marker -->
+  <circle cx="310" cy="200" r="46" fill="#181825" stroke="#fab387" stroke-width="2"/>
+  <text x="310" y="194" text-anchor="middle" font-size="26">☠️</text>
+  <text x="310" y="214" text-anchor="middle" fill="#fab387" font-size="12" font-weight="bold">DEADLOCK</text>
+  <text x="310" y="232" text-anchor="middle" fill="#585b70" font-size="10">erreur SQL 1205</text>
+
+  <!-- Legend -->
+  <line x1="20" y1="395" x2="50" y2="395" stroke="#a6e3a1" stroke-width="2.5"/>
+  <text x="56" y="399" fill="#a6e3a1" font-size="11">Verrou acquis (HOLDS)</text>
+  <line x1="240" y1="395" x2="270" y2="395" stroke="#f38ba8" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="276" y="399" fill="#f38ba8" font-size="11">En attente d'un verrou (WANTS)</text>
+</svg>

@@ -26,7 +26,7 @@ Démo interactive d'un **deadlock SQL Server** et de sa résolution par **retry 
 
 ## Structure du projet
 
-```
+```text
 ConAppPollyRetryDeadlock/
 │
 ├── docker/
@@ -89,20 +89,7 @@ Un **deadlock** (ou interblocage) survient quand deux transactions se bloquent m
 
 ### Visualisation
 
-```
-  Transaction A                        Transaction B
-  ─────────────────                    ─────────────────
-  🔒 Verrouille Comptes                🔒 Verrouille Commandes
-       │                                    │
-       │   ┌────────────────────────────────┘
-       │   │     Les deux attendent...
-       └───┤────────────────────────────────┐
-           │                                │
-       ❌ Veut Commandes              ❌ Veut Comptes
-       (déjà pris par B)             (déjà pris par A)
-
-              ☠️  DEADLOCK — cycle d'attente infini
-```
+![Cycle d'attente circulaire](docs/img/deadlock-cycle.svg)
 
 SQL Server détecte ce cycle et choisit automatiquement une **victime** (la transaction au coût de rollback le plus faible). Cette victime reçoit l'erreur **1205** :
 
@@ -121,17 +108,7 @@ SQL Server détecte ce cycle et choisit automatiquement une **victime** (la tran
 
 ### Séquence chronologique
 
-```
-Temps  Thread A (RunTransactionA)          Thread B (RunTransactionB)
-────── ──────────────────────────────────  ────────────────────────────────────
-  T1   BEGIN TX (Serializable)             BEGIN TX (Serializable)
-  T2   UPDATE Comptes  → 🔒 verrou IX/X    UPDATE Commandes → 🔒 verrou IX/X
-  T3        [SignalAndWait — barrière]           [SignalAndWait — barrière]
-            Les deux arrivent ici ↑↑↑
-  T4   UPDATE Commandes → ⏳ attend B      UPDATE Comptes   → ⏳ attend A
-  T5                   ☠️  SQL Server détecte le deadlock
-  T6   ✅ COMMIT                           ❌ Erreur 1205 (victime choisie)
-```
+![Séquence d'exécution et résolution](docs/img/deadlock-sequence.svg)
 
 ### Pourquoi `IsolationLevel.Serializable` ?
 
@@ -139,19 +116,7 @@ Avec `Serializable`, SQL Server pose des **verrous de plage** (range locks) qui 
 
 ### Rôle de la barrière (`ManualResetEvent`)
 
-`DeadlockSimulator` utilise un `ManualResetEvent` partagé pour synchroniser les deux threads :
-
-```
-Thread A ──── UPDATE Comptes ──── SignalAndWait ─────────────────── UPDATE Commandes ──▶
-                                       │ ↑ gate ouvre quand          ▲
-                                       │   les 2 ont signalé         │ bloqué par B
-Thread B ──── UPDATE Commandes ── SignalAndWait ─────────────────── UPDATE Comptes ───▶
-                                             ↑ bloqué par A
-```
-
-Sans cette barrière, un thread pourrait terminer avant que l'autre ne pose son premier verrou, et le deadlock ne se produirait pas.
-
-Au **retry**, un seul thread rejoue sa transaction. La barrière expire après 1 000 ms (`BarrierWaitTimeoutMs`) et le thread continue seul — le deadlock ne peut plus se produire.
+`DeadlockSimulator` utilise un `ManualResetEvent` partagé pour forcer les deux threads à poser leurs verrous **simultanément** avant de continuer. Sans cette barrière, un thread pourrait terminer avant que l'autre ne pose son premier verrou, et le deadlock ne se produirait pas. Au **retry**, un seul thread rejoue : la barrière expire après `BarrierWaitTimeoutMs` (1 000 ms) et le thread continue seul.
 
 ---
 

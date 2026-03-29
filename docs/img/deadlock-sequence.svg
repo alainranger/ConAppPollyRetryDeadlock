@@ -1,0 +1,73 @@
+<svg width="680" height="480" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Arial, sans-serif">
+
+  <!-- Background -->
+  <rect width="680" height="480" fill="#1e1e2e" rx="12"/>
+
+  <!-- Title -->
+  <text x="340" y="28" text-anchor="middle" fill="#cdd6f4" font-size="14" font-weight="bold">Séquence de déclenchement et résolution</text>
+
+  <!-- ── HEADERS ── -->
+  <rect x="10" y="42" width="310" height="36" rx="6" fill="#181825" stroke="#a6e3a1" stroke-width="2"/>
+  <text x="165" y="65" text-anchor="middle" fill="#a6e3a1" font-size="13" font-weight="bold">Thread A</text>
+
+  <rect x="360" y="42" width="310" height="36" rx="6" fill="#181825" stroke="#f38ba8" stroke-width="2"/>
+  <text x="515" y="65" text-anchor="middle" fill="#f38ba8" font-size="13" font-weight="bold">Thread B</text>
+
+  <!-- ══ ROUND 1 ══ -->
+
+  <!-- Row 1 (y=84, h=52): BEGIN TX + first UPDATE -->
+  <rect x="10"  y="84" width="310" height="52" rx="4" fill="#181825" stroke="#313244" stroke-width="1"/>
+  <text x="165" y="104" text-anchor="middle" fill="#cdd6f4"  font-size="11" font-weight="bold">BEGIN TX (Serializable)</text>
+  <text x="165" y="124" text-anchor="middle" fill="#a6e3a1"  font-size="11">🔒 UPDATE Comptes WHERE Id=1</text>
+
+  <rect x="360" y="84"  width="310" height="52" rx="4" fill="#181825" stroke="#313244" stroke-width="1"/>
+  <text x="515" y="104" text-anchor="middle" fill="#cdd6f4"  font-size="11" font-weight="bold">BEGIN TX (Serializable)</text>
+  <text x="515" y="124" text-anchor="middle" fill="#f38ba8"  font-size="11">🔒 UPDATE Commandes WHERE Id=1</text>
+
+  <!-- Row 2 (y=142, h=50): ManualResetEvent barrier – full width -->
+  <rect x="10" y="142" width="660" height="50" rx="6" fill="#2a2836" stroke="#f9e2af" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="340" y="163" text-anchor="middle" fill="#f9e2af" font-size="11" font-weight="bold">⏸  ManualResetEvent — les deux threads se synchronisent</text>
+  <text x="340" y="181" text-anchor="middle" fill="#585b70" font-size="10">_signalsInRound atteint 2 → gate.Set() → les deux threads sont libérés simultanément</text>
+
+  <!-- Row 3 (y=198, h=38): Second UPDATEs blocked -->
+  <rect x="10"  y="198" width="310" height="38" rx="4" fill="#181825" stroke="#313244" stroke-width="1"/>
+  <text x="165" y="222" text-anchor="middle" fill="#f38ba8" font-size="11">⏳ UPDATE Commandes — verrou tenu par B</text>
+
+  <rect x="360" y="198" width="310" height="38" rx="4" fill="#181825" stroke="#313244" stroke-width="1"/>
+  <text x="515" y="222" text-anchor="middle" fill="#f38ba8" font-size="11">⏳ UPDATE Comptes — verrou tenu par A</text>
+
+  <!-- Row 4 (y=242, h=50): DEADLOCK – full width -->
+  <rect x="10" y="242" width="660" height="50" rx="6" fill="#2b1818" stroke="#f38ba8" stroke-width="2"/>
+  <text x="340" y="263" text-anchor="middle" fill="#f38ba8" font-size="13" font-weight="bold">☠️  DEADLOCK — SQL Server erreur 1205</text>
+  <text x="340" y="281" text-anchor="middle" fill="#585b70" font-size="10">Thread B choisi comme victime (coût de rollback minimal) — ROLLBACK automatique</text>
+
+  <!-- Row 5 (y=298, h=38): Results -->
+  <rect x="10"  y="298" width="310" height="38" rx="4" fill="#1a2b1a" stroke="#a6e3a1" stroke-width="1"/>
+  <text x="165" y="322" text-anchor="middle" fill="#a6e3a1" font-size="12" font-weight="bold">✅  COMMIT — Succès (tentative 1)</text>
+
+  <rect x="360" y="298" width="310" height="38" rx="4" fill="#2b1a1a" stroke="#f38ba8" stroke-width="1"/>
+  <text x="515" y="322" text-anchor="middle" fill="#f38ba8" font-size="11" font-weight="bold">❌  ROLLBACK → Polly retry dans 400 ms</text>
+
+  <!-- ── SÉPARATEUR RETRY ── -->
+  <line x1="10" y1="350" x2="670" y2="350" stroke="#45475a" stroke-width="1" stroke-dasharray="5,4"/>
+  <rect x="258" y="341" width="164" height="18" rx="4" fill="#1e1e2e"/>
+  <text x="340" y="354" text-anchor="middle" fill="#fab387" font-size="11" font-weight="bold">🔄  RETRY — Thread B seul (tentative 2)</text>
+
+  <!-- ══ ROUND 2 ══ -->
+
+  <!-- Row 6 (y=368, h=52): B retries alone, A absent -->
+  <rect x="10"  y="368" width="310" height="52" rx="4" fill="#181825" stroke="#313244" stroke-width="1" stroke-dasharray="5,3"/>
+  <text x="165" y="400" text-anchor="middle" fill="#45475a" font-size="11" font-style="italic">— terminé, absent ce round —</text>
+
+  <rect x="360" y="368" width="310" height="52" rx="4" fill="#181825" stroke="#313244" stroke-width="1"/>
+  <text x="515" y="388" text-anchor="middle" fill="#f38ba8" font-size="11">🔒 UPDATE Commandes WHERE Id=1</text>
+  <text x="515" y="408" text-anchor="middle" fill="#585b70" font-size="10">⏱ WaitOne(1 000 ms) → timeout → continue seul</text>
+
+  <!-- Row 7 (y=426, h=38): B commits -->
+  <rect x="10"  y="426" width="310" height="38" rx="4" fill="#181825" stroke="#313244" stroke-width="1" stroke-dasharray="5,3"/>
+  <text x="165" y="450" text-anchor="middle" fill="#45475a" font-size="11" font-style="italic">— absent —</text>
+
+  <rect x="360" y="426" width="310" height="38" rx="4" fill="#1a2b1a" stroke="#a6e3a1" stroke-width="1"/>
+  <text x="515" y="450" text-anchor="middle" fill="#a6e3a1" font-size="12" font-weight="bold">✅  UPDATE Comptes + COMMIT — Succès</text>
+
+</svg>
